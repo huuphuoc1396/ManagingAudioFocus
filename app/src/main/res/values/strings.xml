@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Managing Audio Focus</string>
+    <string name="request_audio_focus">Request audio focus</string>
 </resources>

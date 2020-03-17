@@ -7,7 +7,7 @@ import android.media.AudioManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.widget.Button
+import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 
@@ -18,28 +18,38 @@ class MainActivity : AppCompatActivity() {
             when (focusChange) {
                 AudioManager.AUDIOFOCUS_GAIN -> {
                     val message = "AUDIOFOCUS_GAIN"
-                    Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+                    toast(message)
                     Log.i(TAG, message)
+                    isPlaying = true
+                    updatePlayPause()
                 }
                 AudioManager.AUDIOFOCUS_LOSS -> {
                     val message = "AUDIOFOCUS_LOSS"
-                    Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+                    toast(message)
                     Log.i(TAG, message)
+                    isPlaying = false
+                    updatePlayPause()
                 }
                 AudioManager.AUDIOFOCUS_LOSS_TRANSIENT -> {
                     val message = "AUDIOFOCUS_LOSS_TRANSIENT"
-                    Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+                    toast(message)
                     Log.i(TAG, message)
+                    isPlaying = false
+                    updatePlayPause()
                 }
                 AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK -> {
                     val message = "AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK"
-                    Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+                    toast(message)
                     Log.i(TAG, message)
+                    isPlaying = false
+                    updatePlayPause()
                 }
                 AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE -> {
                     val message = "AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE"
-                    Toast.makeText(this, message, Toast.LENGTH_LONG).show()
+                    toast(message)
                     Log.i(TAG, message)
+                    isPlaying = true
+                    updatePlayPause()
                 }
             }
         }
@@ -60,16 +70,32 @@ class MainActivity : AppCompatActivity() {
             null
         }
 
+
+    private var playPauseButton: ImageButton? = null
     private var audioManager: AudioManager? = null
+    private var isPlaying: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         audioManager = getSystemService(Context.AUDIO_SERVICE) as? AudioManager
-        findViewById<Button>(R.id.request_audio_focus_button).setOnClickListener {
-            val message = "Requested audio focus: ${requestAudioFocus()}"
-            Toast.makeText(this, message, Toast.LENGTH_LONG).show()
-            Log.i(TAG, message)
+        playPauseButton = findViewById<ImageButton>(R.id.request_audio_focus_button).apply {
+            updatePlayPause()
+            setOnClickListener {
+                isPlaying = isPlaying.not()
+                if (isPlaying) {
+                    val message: String
+                    if (requestAudioFocus()) {
+                        message = "Requested audio focus: Success"
+                    } else {
+                        isPlaying = false
+                        message = "Requested audio focus: Fail"
+                    }
+                    toast(message)
+                    Log.i(TAG, message)
+                }
+                updatePlayPause()
+            }
         }
     }
 
@@ -79,7 +105,19 @@ class MainActivity : AppCompatActivity() {
         } else {
             audioManager?.abandonAudioFocus(null)
         }
+        isPlaying = false
+        updatePlayPause()
         super.onStop()
+    }
+
+    private fun updatePlayPause() {
+        if (isPlaying) {
+            // TODO: Play your player
+            playPauseButton?.setImageDrawable(getDrawable(R.drawable.ic_pause))
+        } else {
+            // TODO: Pause your player
+            playPauseButton?.setImageDrawable(getDrawable(R.drawable.ic_play))
+        }
     }
 
     private fun requestAudioFocus(): Boolean {
@@ -95,7 +133,11 @@ class MainActivity : AppCompatActivity() {
         return res == AudioManager.AUDIOFOCUS_GAIN
     }
 
+    private fun toast(message: String){
+        Toast.makeText(this@MainActivity, message, Toast.LENGTH_SHORT).show()
+    }
+
     companion object {
-        private val TAG = MainActivity::class.java.simpleName
+        private const val TAG = "MainActivity_DEBUG"
     }
 }
